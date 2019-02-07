@@ -48,8 +48,9 @@ const vsSource = `
 attribute vec4 aVertexPosition;
 uniform mat4 uModelViewMatrix;
 uniform mat4 uProjectionMatrix;
+uniform mat4 uCameraViewMatrix;
 void main() {
-    gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
+    gl_Position = uProjectionMatrix * uCameraViewMatrix * uModelViewMatrix * aVertexPosition;
 }
 `;
 
@@ -73,7 +74,7 @@ if (!gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS)) {
 // Fragment shader program
 const fsSource = `
 void main() {
-    gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+    gl_FragColor = vec4(0.4, 1.0, 1.0, 1.0);
 }
 `;
 
@@ -109,6 +110,7 @@ const programInfo = {
     uniformLocations: {
         projectionMatrix: gl.getUniformLocation(shaderProgram, 'uProjectionMatrix'),
         modelViewMatrix: gl.getUniformLocation(shaderProgram, 'uModelViewMatrix'),
+        cameraViewMatrix: gl.getUniformLocation(shaderProgram, 'uCameraViewMatrix'),
     }
 };
 
@@ -174,6 +176,12 @@ mat4.perspective(
     zFar
 );
 
+const cameraViewMatrix = mat4.create();
+// mat4.translate(cameraViewMatrix, cameraViewMatrix, [-1, -1, 10])
+// mat4.rotateY(cameraViewMatrix, cameraViewMatrix, -Math.PI * 0.1 );
+// mat4.rotateX(cameraViewMatrix, cameraViewMatrix, -Math.PI * 0.05 );
+// mat4.invert(cameraViewMatrix, cameraViewMatrix);
+
 // Create a matrix for the model(square)
 const modelViewMatrix = mat4.create();
 
@@ -215,6 +223,14 @@ gl.uniformMatrix4fv(
     false,
     projectionMatrix
 );
+
+// Set the camera matrix
+gl.uniformMatrix4fv(
+    programInfo.uniformLocations.cameraViewMatrix,
+    false,
+    cameraViewMatrix
+);
+
 
 // Set the model matrix
 gl.uniformMatrix4fv(
